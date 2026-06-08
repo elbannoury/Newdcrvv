@@ -109,38 +109,47 @@ export default function Checkout() {
   }, [total]);
 
   const sendCallMeBotNotification = async (orderId: string) => {
-    const itemsText = cart
-      .map((item, index) => `${index + 1}. ${item.name}${item.variant_title ? ` (${item.variant_title})` : ''} × ${item.quantity} = ${formatMAD(item.price * item.quantity)}`)
-      .join('%0A');
+  const sendCallMeBotNotification = async (orderId: string) => {
+  const itemsText = cart
+    .map((item, index) => `${index + 1}. ${item.name}${item.variant_title ? ` (${item.variant_title})` : ''} × ${item.quantity} = ${formatMAD(item.price * item.quantity)}`)
+    .join('\n');
 
-    const orderRef = orderId.slice(0, 8).toUpperCase();
-    const message = [
-      '🛒 طلب جديد من DCRVV',
-      `رقم الطلب: #${orderRef}`,
-      `الاسم: ${addr.name}`,
-      `البريد: ${addr.email}`,
-      `الهاتف: ${addr.phone}`,
-      `العنوان: ${addr.address}`,
-      `المدينة: ${addr.city}`,
-      `الجهة: ${addr.state || '-'}`,
-      `الرمز البريدي: ${addr.zip || '-'}`,
-      `الدولة: ${addr.country}`,
-      '',
-      'المنتجات:',
-      itemsText.replace(/%0A/g, '\n'),
-      '',
-      `الإجمالي: ${formatMAD(total)}`,
-      'طريقة الدفع: الدفع عند الاستلام / أو تم الدفع أونلاين حسب حالة الطلب',
-    ].join('\n');
+  const orderRef = orderId.slice(0, 8).toUpperCase();
+  const message = [
+    '🛒 طلب جديد من DCRVV',
+    `رقم الطلب: #${orderRef}`,
+    `الاسم: ${addr.name}`,
+    `البريد: ${addr.email}`,
+    `الهاتف: ${addr.phone}`,
+    `العنوان: ${addr.address}`,
+    `المدينة: ${addr.city}`,
+    `الجهة: ${addr.state || '-'}`,
+    `الرمز البريدي: ${addr.zip || '-'}`,
+    `الدولة: ${addr.country}`,
+    '',
+    'المنتجات:',
+    itemsText,
+    '',
+    `الإجمالي: ${formatMAD(total)}`,
+    'طريقة الدفع: الدفع عند الاستلام / أو تم الدفع أونلاين حسب حالة الطلب',
+  ].join('%0A');
 
-    const url = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${encodeURIComponent(message)}&apikey=${CALLMEBOT_API_KEY}`;
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${message}&apikey=${CALLMEBOT_API_KEY}`;
 
-    try {
-      await fetch(url, { method: 'GET', mode: 'no-cors' });
-    } catch (error) {
-      console.error('CallMeBot notification failed', error);
+  try {
+    const response = await fetch(url, { 
+      method: 'GET'
+      // احذف mode: 'no-cors'
+    });
+    
+    if (!response.ok) {
+      console.warn(`WhatsApp notification returned status: ${response.status}`);
     }
-  };
+  } catch (error) {
+    console.error('CallMeBot notification failed:', error);
+    // لا توقف العملية حتى لو فشلت الإشعارات
+  }
+};
 
   const createOrderRecord = async (status: string, paymentIntentId?: string) => {
     const { data: customer, error: customerError } = await supabase
