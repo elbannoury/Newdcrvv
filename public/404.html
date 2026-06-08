@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DCRVV</title>
+    <script>
+      // SPA fallback for static hosts (e.g. GitHub Pages) that don't support rewrites.
+      // Preserve the path & query, then redirect to root so the SPA router can take over.
+      (function () {
+        var path = window.location.pathname + window.location.search + window.location.hash;
+        sessionStorage.setItem('spa-redirect', path);
+        window.location.replace('/');
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
